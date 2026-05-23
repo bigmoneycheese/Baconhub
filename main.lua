@@ -1,3 +1,14 @@
+local loaderSource = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/bigmoneycheese/Baconhub/main/main.lua"))()'
+
+local queueTeleport = queue_on_teleport
+	or queueonteleport
+	or (syn and syn.queue_on_teleport)
+	or (fluxus and fluxus.queue_on_teleport)
+
+if queueTeleport then
+	pcall(queueTeleport, loaderSource)
+end
+
 local scripts = {
 	[9754968779] = {
 		name = "+1 Health Per Click",
