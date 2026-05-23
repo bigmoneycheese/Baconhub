@@ -2,6 +2,9 @@ local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local GuiService = game:GetService("GuiService")
+local TeleportService = game:GetService("TeleportService")
+local VirtualUser = game:GetService("VirtualUser")
 
 local player = Players.LocalPlayer
 
@@ -29,6 +32,8 @@ local state = {
 	autoClick = false,
 	autoRebirth = false,
 	autoFarmWins = {},
+	autoRejoin = false,
+	antiAfk = false,
 }
 
 local Window = Rayfield:CreateWindow({
@@ -55,6 +60,7 @@ local Window = Rayfield:CreateWindow({
 })
 
 local MainTab = Window:CreateTab("Main", 0)
+local SettingsTab = Window:CreateTab("Settings", 0)
 MainTab:CreateSection("Automation")
 
 local function notify(title, content)
@@ -65,6 +71,54 @@ local function notify(title, content)
 		Image = 0,
 	})
 end
+
+local reconnectDisabledList = {
+	[Enum.ConnectionError.DisconnectLuaKick] = true,
+	[Enum.ConnectionError.DisconnectSecurityKeyMismatch] = true,
+	[Enum.ConnectionError.DisconnectNewSecurityKeyMismatch] = true,
+	[Enum.ConnectionError.DisconnectDuplicateTicket] = true,
+	[Enum.ConnectionError.DisconnectWrongVersion] = true,
+	[Enum.ConnectionError.DisconnectProtocolMismatch] = true,
+	[Enum.ConnectionError.DisconnectBadhash] = true,
+	[Enum.ConnectionError.DisconnectIllegalTeleport] = true,
+	[Enum.ConnectionError.DisconnectDuplicatePlayer] = true,
+	[Enum.ConnectionError.DisconnectCloudEditKick] = true,
+	[Enum.ConnectionError.DisconnectOnRemoteSysStats] = true,
+	[Enum.ConnectionError.DisconnectRaknetErrors] = true,
+	[Enum.ConnectionError.PlacelaunchFlooded] = true,
+	[Enum.ConnectionError.PlacelaunchHashException] = true,
+	[Enum.ConnectionError.PlacelaunchHashExpired] = true,
+	[Enum.ConnectionError.PlacelaunchUnauthorized] = true,
+	[Enum.ConnectionError.PlacelaunchUserLeft] = true,
+	[Enum.ConnectionError.PlacelaunchRestricted] = true,
+}
+
+local autoRejoinRunning = false
+
+GuiService.ErrorMessageChanged:Connect(function()
+	if not state.autoRejoin or autoRejoinRunning then
+		return
+	end
+
+	local errorCode = GuiService:GetErrorCode()
+	local errorType = GuiService:GetErrorType()
+	if errorType == Enum.ConnectionError.DisconnectErrors and not reconnectDisabledList[errorCode] then
+		autoRejoinRunning = true
+		print("Disconnect registered!")
+		while state.autoRejoin and task.wait(5) do
+			TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId)
+		end
+	end
+end)
+
+player.Idled:Connect(function()
+	if not state.antiAfk then
+		return
+	end
+
+	VirtualUser:CaptureController()
+	VirtualUser:ClickButton2(Vector2.new())
+end)
 
 local function getCharacterRoot()
 	local character = player.Character or player.CharacterAdded:Wait()
@@ -165,6 +219,28 @@ for _, world in ipairs(worlds) do
 		})
 	end
 end
+
+SettingsTab:CreateSection("Connection")
+
+SettingsTab:CreateToggle({
+	Name = "Auto Rejoin",
+	CurrentValue = false,
+	Flag = "AutoRejoin",
+	Callback = function(value)
+		state.autoRejoin = value
+		notify("Auto Rejoin", value and "Enabled" or "Disabled")
+	end,
+})
+
+SettingsTab:CreateToggle({
+	Name = "Anti AFK",
+	CurrentValue = false,
+	Flag = "AntiAFK",
+	Callback = function(value)
+		state.antiAfk = value
+		notify("Anti AFK", value and "Enabled" or "Disabled")
+	end,
+})
 
 Rayfield:LoadConfiguration()
 notify("BaconHub", "+1 Health Per Click loaded. Press K to toggle the UI.")

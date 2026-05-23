@@ -16,6 +16,8 @@ Baconhub is a lightweight Roblox script hub.
 - `Gun Evolution`
 - `Slime RNG`
 - `+1 Shrink per Step`
+- `Forsaken`
+- `SLAP`
 
 ## Features
 

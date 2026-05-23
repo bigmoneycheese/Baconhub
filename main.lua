@@ -19,6 +19,16 @@ local scripts = {
 		path = "scripts/PlusOneShrinkPerStep.lua",
 		url = "https://raw.githubusercontent.com/bigmoneycheese/Baconhub/main/scripts/PlusOneShrinkPerStep.lua",
 	},
+	[6331902150] = {
+		name = "Forsaken",
+		path = "scripts/Forsaken.lua",
+		url = "https://raw.githubusercontent.com/bigmoneycheese/Baconhub/main/scripts/Forsaken.lua",
+	},
+	[8639693426] = {
+		name = "SLAP",
+		path = "scripts/Slap.lua",
+		url = "https://raw.githubusercontent.com/bigmoneycheese/Baconhub/main/scripts/Slap.lua",
+	},
 }
 
 local scriptInfo = scripts[game.GameId]
