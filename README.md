@@ -18,6 +18,7 @@ Baconhub is a lightweight Roblox script hub.
 - `+1 Shrink per Step`
 - `Forsaken`
 - `SLAP`
+- `Spin a Soccer Card`
 
 ## Features
 
