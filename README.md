@@ -4,6 +4,12 @@ Open source Roblox hub I made for fun.
 
 Website: https://bigmoneycheese.github.io/Baconhub/
 
+## Request A Game
+
+Request new game support or report a supported game that stopped working here:
+
+https://bigmoneycheese.github.io/Baconhub/requests.html
+
 ```lua
 loadstring(game:HttpGet("https://raw.githubusercontent.com/bigmoneycheese/Baconhub/main/main.lua"))()
 ```
