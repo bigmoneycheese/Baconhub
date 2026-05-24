@@ -2,6 +2,8 @@
 
 Open source Roblox hub I made for fun.
 
+Website: https://bigmoneycheese.github.io/Baconhub/
+
 ```lua
 loadstring(game:HttpGet("https://raw.githubusercontent.com/bigmoneycheese/Baconhub/main/main.lua"))()
 ```
@@ -19,6 +21,7 @@ Baconhub is a lightweight Roblox script hub.
 - `Forsaken`
 - `SLAP`
 - `Spin a Soccer Card`
+- `untitled tag game`
 
 ## Features
 
