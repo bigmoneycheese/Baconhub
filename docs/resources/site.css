@@ -260,6 +260,27 @@ p {
   margin: 0 5rem;
 }
 
+.request-callout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  margin: 0 5rem 2rem;
+  border: 1px solid #dddddd;
+  background: #242423;
+  padding: 1.2rem 1.4rem;
+}
+
+.request-callout h3,
+.request-callout h4,
+.request-callout p {
+  margin-bottom: 0.25rem;
+}
+
+.request-callout .sys-button {
+  flex: 0 0 auto;
+}
+
 .addition {
   color: #859900;
 }
@@ -589,6 +610,12 @@ p {
 
   .announcements {
     margin: 0 1rem;
+  }
+
+  .request-callout {
+    align-items: flex-start;
+    flex-direction: column;
+    margin: 0 1rem 2rem;
   }
 
   .image-link {
