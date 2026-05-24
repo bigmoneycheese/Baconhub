@@ -45,6 +45,11 @@ local scripts = {
 		path = "scripts/SpinASoccerCard.lua",
 		url = "https://raw.githubusercontent.com/bigmoneycheese/Baconhub/main/scripts/SpinASoccerCard.lua",
 	},
+	[4864117649] = {
+		name = "untitled tag game",
+		path = "scripts/UntitledTagGame.lua",
+		url = "https://raw.githubusercontent.com/bigmoneycheese/Baconhub/main/scripts/UntitledTagGame.lua",
+	},
 }
 
 local scriptInfo = scripts[game.GameId]
