@@ -141,6 +141,13 @@ a:focus-visible {
   text-align: center;
 }
 
+.mission-statement {
+  max-width: 680px;
+  margin: 1rem auto 0;
+  color: #b9bbbe;
+  text-align: center;
+}
+
 .spacer-panel {
   display: table;
   width: 100%;
