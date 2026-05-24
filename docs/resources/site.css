@@ -281,6 +281,10 @@ p {
   flex: 0 0 auto;
 }
 
+.request-callout + hr {
+  margin-top: 1rem;
+}
+
 .addition {
   color: #859900;
 }
