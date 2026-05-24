@@ -1,6 +1,6 @@
 # Baconhub
 
-Open source Roblox hub I made for fun.
+Open source Roblox hub made for sharing, learning, and helping people build their own scripts.
 
 ```lua
 loadstring(game:HttpGet("https://raw.githubusercontent.com/bigmoneycheese/Baconhub/main/main.lua"))()
@@ -16,7 +16,7 @@ https://bigmoneycheese.github.io/Baconhub/requests.html
 
 ## About
 
-Baconhub is a lightweight Roblox script hub.
+Baconhub is a lightweight Roblox script hub with no key system. The goal is to keep the code public so people can use it, learn from it, and build their own scripts instead of hiding everything behind profit-focused gates.
 
 ## Supported Games
 
