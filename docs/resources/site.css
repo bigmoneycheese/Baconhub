@@ -90,7 +90,7 @@ a:focus-visible {
 
 .desktop-nav ul {
   display: flex;
-  gap: 40px;
+  gap: 28px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -387,6 +387,72 @@ p {
   background: #3b3b3a;
 }
 
+.status-list {
+  display: grid;
+  gap: 12px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid #dddddd;
+  background: #2b2b2b;
+  padding: 14px;
+}
+
+.status-item h5,
+.status-item p {
+  margin-bottom: 0.25rem;
+}
+
+.status-pill {
+  display: inline-block;
+  min-width: 92px;
+  border: 1px solid #5c5c5c;
+  color: #ffffff;
+  font-family: "Montserrat", Arial, sans-serif;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  padding: 0.35rem 0.6rem;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.status-pill.planned {
+  background: #5c5c5c;
+}
+
+.status-pill.active {
+  background: #7b6d28;
+}
+
+.status-pill.review {
+  background: #3f6375;
+}
+
+.status-pill.done {
+  background: #4d7a4d;
+}
+
+.request-actions {
+  max-width: 560px;
+}
+
+.status-guide li {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: -1px;
+  border: 1px solid #dddddd;
+  background: #2b2b2b;
+  color: #cccccc;
+  font-size: 18px;
+  padding: 12px;
+}
+
 .mob-menu {
   display: none;
 }
@@ -517,6 +583,12 @@ p {
   .download-columns,
   .button-row {
     grid-template-columns: 1fr;
+  }
+
+  .status-item,
+  .status-guide li {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .download-block {
