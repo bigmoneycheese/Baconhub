@@ -437,8 +437,17 @@ p {
   background: #4d7a4d;
 }
 
+.problem-button {
+  border-color: #8a3f3f;
+  background: #8a3f3f;
+}
+
 .request-actions {
   max-width: 560px;
+}
+
+.request-note {
+  margin-top: 0.9rem;
 }
 
 .status-guide li {
@@ -451,6 +460,13 @@ p {
   color: #cccccc;
   font-size: 18px;
   padding: 12px;
+}
+
+.completed-request-list li a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
 .mob-menu {
@@ -586,7 +602,8 @@ p {
   }
 
   .status-item,
-  .status-guide li {
+  .status-guide li,
+  .completed-request-list li a {
     align-items: flex-start;
     flex-direction: column;
   }
