@@ -458,6 +458,10 @@ p {
   background: #3f6375;
 }
 
+.status-pill.broken {
+  background: #8a3f3f;
+}
+
 .status-pill.done {
   background: #4d7a4d;
 }
