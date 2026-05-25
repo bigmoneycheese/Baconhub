@@ -8,6 +8,8 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/bigmoneycheese/Baconh
 
 Website: https://bigmoneycheese.github.io/Baconhub/
 
+Discord: https://discord.gg/jUeW5PB4mr
+
 ## Request A Game
 
 Request new game support or report a supported game that stopped working here:
