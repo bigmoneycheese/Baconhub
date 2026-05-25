@@ -35,6 +35,8 @@ for _, prefix in ipairs({
 	"BaconHubAutoBuyMeat",
 	"BaconHubAutoOrganize",
 	"BaconHubAutoPlaceBoughtObjects",
+	"BaconHubAutoPickupEverything",
+	"BaconHubAutoDiscard",
 	"BaconHubAutoUpgrade",
 }) do
 	stopLegacyFeature(prefix)
@@ -80,6 +82,7 @@ local totemStockUpdate = Remotes:WaitForChild("TotemStockUpdate")
 local pickupObject = Remotes:WaitForChild("PickupObject")
 local placeObject = Remotes:WaitForChild("PlaceObject")
 local placeResult = Remotes:WaitForChild("PlaceResult")
+local discardHeldTool = Remotes:WaitForChild("DiscardHeldTool")
 
 local state = {
 	running = true,
@@ -93,11 +96,14 @@ local state = {
 	autoBuyMeat = false,
 	autoBuyShopItems = false,
 	autoPlaceObjects = false,
+	autoPickupEverything = false,
+	autoDiscard = false,
 	autoUpgrade = false,
 	autoRejoin = false,
 	antiAfk = false,
 
 	autoOrganizeRunning = false,
+	pickupEverythingRunning = false,
 	autoRejoinRunning = false,
 
 	cookStateBySpot = {},
@@ -113,6 +119,8 @@ local state = {
 	objectQueue = {},
 	objectKnownStacks = {},
 	objectQueuedCurrent = {},
+	discardMode = "Cooked Not Perfect",
+	discardNameFilter = "",
 	upgradeStates = {},
 	failedUpgradeAttempts = {},
 	blockedUpgradeUntil = {},
@@ -123,6 +131,8 @@ local state = {
 	lastBuyAction = "Idle",
 	lastShopBuyAction = "Idle",
 	lastObjectAction = "Idle",
+	lastPickupAllAction = "Idle",
+	lastDiscardAction = "Idle",
 	lastUpgradeAction = "Idle",
 	lastOrganizeAction = "Idle",
 	lastError = nil,
@@ -891,6 +901,85 @@ local function isPlaceableTool(tool)
 	return tool:IsA("Tool") and findTemplate(getToolBaseName(tool)) ~= nil
 end
 
+local function isHammerTool(tool)
+	return tool and getToolBaseName(tool) == "Hammer [Pick up]"
+end
+
+local function isRawMeatTool(tool)
+	return tool:IsA("Tool") and cleanToolName(tool.Name):lower():find("^raw ") ~= nil
+end
+
+local function isMeatTool(tool)
+	return tool:IsA("Tool") and (
+		tool:GetAttribute("CookTime") ~= nil
+		or tool:GetAttribute("Cooked") ~= nil
+		or isRawMeatTool(tool)
+	)
+end
+
+local function isCookedMeatTool(tool)
+	return isMeatTool(tool) and not isRawMeatTool(tool)
+end
+
+local function isPerfectMeatTool(tool)
+	return cleanToolName(tool.Name):lower():find("perfect", 1, true) ~= nil
+end
+
+local function shouldDiscardTool(tool)
+	if not tool or not tool:IsA("Tool") or isHammerTool(tool) then
+		return false
+	end
+
+	local mode = state.discardMode
+
+	if mode == "Name Contains" then
+		local needle = trim(state.discardNameFilter):lower()
+		return needle ~= "" and tool.Name:lower():find(needle, 1, true) ~= nil
+	elseif mode == "Raw Meat" then
+		return isRawMeatTool(tool)
+	elseif mode == "All Cooked Meat" then
+		return isCookedMeatTool(tool)
+	elseif mode == "All Meat" then
+		return isMeatTool(tool)
+	elseif mode == "Objects Only" then
+		return isPlaceableTool(tool)
+	elseif mode == "Everything Except Hammer" then
+		return true
+	end
+
+	return isCookedMeatTool(tool) and not isPerfectMeatTool(tool)
+end
+
+local function getNextDiscardTool()
+	for _, container in ipairs({ LocalPlayer.Character, LocalPlayer:FindFirstChild("Backpack") }) do
+		if container then
+			for _, tool in ipairs(container:GetChildren()) do
+				if shouldDiscardTool(tool) then
+					return tool
+				end
+			end
+		end
+	end
+end
+
+local function discardTool(tool)
+	if not tool or not tool.Parent then
+		return false
+	end
+
+	equipTool(tool, 0.12)
+
+	if tool.Parent ~= LocalPlayer.Character then
+		return false
+	end
+
+	local displayName = cleanToolName(tool.Name)
+	discardHeldTool:FireServer()
+	state.lastDiscardAction = "Discarded " .. displayName
+	task.wait(0.25)
+	return true
+end
+
 local function sortObjectQueue()
 	table.sort(state.objectQueue, function(left, right)
 		local leftPrice = getObjectPrice(left)
@@ -1190,6 +1279,8 @@ local function getInventoryObjects()
 end
 
 local function pickupAllMeat(lot)
+	local count = 0
+
 	for _, object in ipairs(lot:GetChildren()) do
 		for _, folderName in ipairs({ "GrillSpots", "Plates" }) do
 			local slots = object:FindFirstChild(folderName)
@@ -1197,12 +1288,71 @@ local function pickupAllMeat(lot)
 				for _, slot in ipairs(slots:GetChildren()) do
 					if slotHasMeat(slot) then
 						pickupMeat:FireServer(slot)
+						count += 1
 						task.wait(0.08)
 					end
 				end
 			end
 		end
 	end
+
+	return count
+end
+
+local function pickupAllPlacedObjects(lot)
+	local objects = getPlacedObjects(lot)
+
+	if #objects == 0 then
+		return 0
+	end
+
+	local hammer = findToolByBaseName("Hammer [Pick up]")
+	if not hammer then
+		state.lastPickupAllAction = "Hammer not found"
+		return 0
+	end
+
+	local count = 0
+	equipTool(hammer, 0.15)
+
+	for _, object in ipairs(objects) do
+		if object.model and object.model.Parent then
+			equipTool(hammer, 0.08)
+			pickupObject:FireServer(object.model)
+			count += 1
+			task.wait(0.1)
+		end
+	end
+
+	return count
+end
+
+local function pickupEverythingOnce()
+	if state.pickupEverythingRunning then
+		return false
+	end
+
+	state.pickupEverythingRunning = true
+
+	local success, err = pcall(function()
+		local lot = getLot()
+		if not lot then
+			state.lastPickupAllAction = "No lot found"
+			return
+		end
+
+		local meatCount = pickupAllMeat(lot)
+		local objectCount = pickupAllPlacedObjects(lot)
+		state.lastPickupAllAction = "Picked meat " .. tostring(meatCount) .. ", objects " .. tostring(objectCount)
+	end)
+
+	if not success then
+		state.lastPickupAllAction = "Error"
+		state.lastError = tostring(err)
+	end
+
+	state.pickupEverythingRunning = false
+	return true
 end
 
 local function makePlan(objects, placementPart)
@@ -1762,6 +1912,38 @@ end))
 
 table.insert(state.loops, task.spawn(function()
 	while state.running do
+		if state.autoPickupEverything then
+			local ran = pickupEverythingOnce()
+			task.wait(ran and 1.25 or 0.5)
+		else
+			task.wait(0.5)
+		end
+	end
+end))
+
+table.insert(state.loops, task.spawn(function()
+	while state.running do
+		if state.autoDiscard then
+			local tool = getNextDiscardTool()
+
+			if tool then
+				state.lastDiscardAction = "Discarding " .. cleanToolName(tool.Name)
+				if not discardTool(tool) then
+					state.lastDiscardAction = "Could not discard " .. cleanToolName(tool.Name)
+					task.wait(0.75)
+				end
+			else
+				state.lastDiscardAction = "Waiting for matches"
+				task.wait(0.75)
+			end
+		else
+			task.wait(0.5)
+		end
+	end
+end))
+
+table.insert(state.loops, task.spawn(function()
+	while state.running do
 		if state.autoUpgrade then
 			local hasStates = requestUpgradeStates()
 			local money = getMoney()
@@ -1867,6 +2049,8 @@ function state:Cleanup()
 	self.autoBuyMeat = false
 	self.autoBuyShopItems = false
 	self.autoPlaceObjects = false
+	self.autoPickupEverything = false
+	self.autoDiscard = false
 	self.autoUpgrade = false
 	self.autoRejoin = false
 	self.antiAfk = false
@@ -1914,6 +2098,7 @@ local Window = Rayfield:CreateWindow({
 local AutomationTab = Window:CreateTab("Automation", 0)
 local ShopTab = Window:CreateTab("Shop", 0)
 local ObjectsTab = Window:CreateTab("Objects", 0)
+local InventoryTab = Window:CreateTab("Inventory", 0)
 local UpgradesTab = Window:CreateTab("Upgrades", 0)
 local StatusTab = Window:CreateTab("Status", 0)
 local SettingsTab = Window:CreateTab("Settings", 0)
@@ -1936,6 +2121,8 @@ local function refreshStatusParagraph()
 		"Buy: " .. state.lastBuyAction .. " | " .. state.buyMeatMode .. " | selected " .. tostring(#state.selectedBuyMeats),
 		"Shop: " .. state.lastShopBuyAction .. " | " .. state.shopBuyMode .. " | selected " .. tostring(#state.selectedShopItems),
 		"Objects: " .. state.lastObjectAction .. " | queue " .. tostring(#state.objectQueue),
+		"Pickup: " .. state.lastPickupAllAction,
+		"Discard: " .. state.lastDiscardAction .. " | " .. state.discardMode,
 		"Upgrade: " .. state.lastUpgradeAction,
 		"Organize: " .. state.lastOrganizeAction,
 		state.lastError and ("Last error: " .. state.lastError) or nil,
@@ -1965,6 +2152,15 @@ local shopBuyModeOptions = {
 	"Most Expensive Selected",
 	"Cheapest Selected",
 	"Random Selected",
+}
+local discardModeOptions = {
+	"Cooked Not Perfect",
+	"Raw Meat",
+	"All Cooked Meat",
+	"All Meat",
+	"Objects Only",
+	"Everything Except Hammer",
+	"Name Contains",
 }
 local shopItemOptions = getShopOptions(state.shopSearchText)
 local shopItemDropdown
@@ -2168,6 +2364,59 @@ ObjectsTab:CreateButton({
 	Callback = function()
 		queueCurrentPlaceableTools()
 		notify("Object Queue", "Queued current object tools.")
+	end,
+})
+
+InventoryTab:CreateToggle({
+	Name = "Auto Pickup Everything",
+	CurrentValue = false,
+	Flag = "AutoPickupEverything",
+	Callback = function(value)
+		state.autoPickupEverything = value
+		notify("Auto Pickup Everything", value and "Enabled" or "Disabled")
+	end,
+})
+
+InventoryTab:CreateButton({
+	Name = "Pickup Everything Once",
+	Callback = function()
+		task.spawn(function()
+			pickupEverythingOnce()
+			notify("Pickup Everything", state.lastPickupAllAction)
+		end)
+	end,
+})
+
+InventoryTab:CreateToggle({
+	Name = "Auto Discard",
+	CurrentValue = false,
+	Flag = "AutoDiscard",
+	Callback = function(value)
+		state.autoDiscard = value
+		notify("Auto Discard", value and "Enabled" or "Disabled")
+	end,
+})
+
+InventoryTab:CreateDropdown({
+	Name = "Discard Mode",
+	Options = discardModeOptions,
+	CurrentOption = { state.discardMode },
+	MultipleOptions = false,
+	Flag = "DiscardMode",
+	Callback = function(option)
+		state.discardMode = getSingleOption(option, "Cooked Not Perfect")
+		notify("Discard Mode", state.discardMode)
+	end,
+})
+
+InventoryTab:CreateInput({
+	Name = "Discard Name Contains",
+	CurrentValue = "",
+	PlaceholderText = "Chicken, Salmon, Raw, etc.",
+	RemoveTextAfterFocusLost = false,
+	Flag = "DiscardNameContains",
+	Callback = function(value)
+		state.discardNameFilter = tostring(value or "")
 	end,
 })
 
