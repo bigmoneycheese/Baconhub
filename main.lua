@@ -10,6 +10,11 @@ if queueTeleport then
 end
 
 local scripts = {
+	[10082634290] = {
+		name = "BBQ It",
+		path = "scripts/BBQIt.lua",
+		url = "https://raw.githubusercontent.com/bigmoneycheese/Baconhub/main/scripts/BBQIt.lua",
+	},
 	[6170143659] = {
 		name = "Demonology",
 		path = "scripts/Demonology.lua",
