@@ -119,6 +119,7 @@ local state = {
 	objectQueue = {},
 	objectKnownStacks = {},
 	objectQueuedCurrent = {},
+	selectedInventoryObjects = {},
 	discardMode = "Cooked Not Perfect",
 	discardNameFilter = "",
 	upgradeStates = {},
@@ -717,6 +718,14 @@ local function getShopOptions(searchText)
 	return options
 end
 
+local function getObjectSelectionOption(baseName, category)
+	if category and category ~= "" then
+		return category .. " / " .. baseName
+	end
+
+	return baseName
+end
+
 local function getShopItemByOption(option)
 	for _, item in ipairs(getShopItems("")) do
 		if item.option == option or item.name == option then
@@ -925,6 +934,15 @@ local function isPerfectMeatTool(tool)
 	return cleanToolName(tool.Name):lower():find("perfect", 1, true) ~= nil
 end
 
+local function shouldHandleInventoryObject(baseName, category)
+	if #state.selectedInventoryObjects == 0 then
+		return true
+	end
+
+	local selectedSet = toSet(state.selectedInventoryObjects)
+	return selectedSet[baseName] or selectedSet[getObjectSelectionOption(baseName, category)]
+end
+
 local function shouldDiscardTool(tool)
 	if not tool or not tool:IsA("Tool") or isHammerTool(tool) then
 		return false
@@ -942,7 +960,9 @@ local function shouldDiscardTool(tool)
 	elseif mode == "All Meat" then
 		return isMeatTool(tool)
 	elseif mode == "Objects Only" then
-		return isPlaceableTool(tool)
+		local baseName = getToolBaseName(tool)
+		local _, category = findTemplate(baseName)
+		return isPlaceableTool(tool) and shouldHandleInventoryObject(baseName, category)
 	elseif mode == "Everything Except Hammer" then
 		return true
 	end
@@ -1306,6 +1326,19 @@ local function pickupAllPlacedObjects(lot)
 		return 0
 	end
 
+	local filteredObjects = {}
+
+	for _, object in ipairs(objects) do
+		if shouldHandleInventoryObject(object.name, object.category) then
+			table.insert(filteredObjects, object)
+		end
+	end
+
+	if #filteredObjects == 0 then
+		state.lastPickupAllAction = "No selected placed objects"
+		return 0
+	end
+
 	local hammer = findToolByBaseName("Hammer [Pick up]")
 	if not hammer then
 		state.lastPickupAllAction = "Hammer not found"
@@ -1315,7 +1348,7 @@ local function pickupAllPlacedObjects(lot)
 	local count = 0
 	equipTool(hammer, 0.15)
 
-	for _, object in ipairs(objects) do
+	for _, object in ipairs(filteredObjects) do
 		if object.model and object.model.Parent then
 			equipTool(hammer, 0.08)
 			pickupObject:FireServer(object.model)
@@ -2121,7 +2154,7 @@ local function refreshStatusParagraph()
 		"Buy: " .. state.lastBuyAction .. " | " .. state.buyMeatMode .. " | selected " .. tostring(#state.selectedBuyMeats),
 		"Shop: " .. state.lastShopBuyAction .. " | " .. state.shopBuyMode .. " | selected " .. tostring(#state.selectedShopItems),
 		"Objects: " .. state.lastObjectAction .. " | queue " .. tostring(#state.objectQueue),
-		"Pickup: " .. state.lastPickupAllAction,
+		"Pickup: " .. state.lastPickupAllAction .. " | object filter " .. tostring(#state.selectedInventoryObjects),
 		"Discard: " .. state.lastDiscardAction .. " | " .. state.discardMode,
 		"Upgrade: " .. state.lastUpgradeAction,
 		"Organize: " .. state.lastOrganizeAction,
@@ -2164,6 +2197,8 @@ local discardModeOptions = {
 }
 local shopItemOptions = getShopOptions(state.shopSearchText)
 local shopItemDropdown
+local inventoryObjectOptions = getShopOptions("")
+local inventoryObjectDropdown
 
 local function refreshShopItemDropdown()
 	shopItemOptions = getShopOptions(state.shopSearchText)
@@ -2417,6 +2452,36 @@ InventoryTab:CreateInput({
 	Flag = "DiscardNameContains",
 	Callback = function(value)
 		state.discardNameFilter = tostring(value or "")
+	end,
+})
+
+inventoryObjectDropdown = InventoryTab:CreateDropdown({
+	Name = "Objects To Pick Up/Discard",
+	Options = inventoryObjectOptions,
+	CurrentOption = state.selectedInventoryObjects,
+	MultipleOptions = true,
+	Flag = "InventoryObjectFilter",
+	Callback = function(option)
+		state.selectedInventoryObjects = getMultiOptions(option)
+		notify("Object Filter", tostring(#state.selectedInventoryObjects) .. " selected")
+	end,
+})
+
+InventoryTab:CreateButton({
+	Name = "Select All Objects",
+	Callback = function()
+		state.selectedInventoryObjects = copyList(inventoryObjectOptions)
+		setDropdownSelection(inventoryObjectDropdown, state.selectedInventoryObjects)
+		notify("Object Filter", "Selected all objects.")
+	end,
+})
+
+InventoryTab:CreateButton({
+	Name = "Clear Object Filter",
+	Callback = function()
+		state.selectedInventoryObjects = {}
+		setDropdownSelection(inventoryObjectDropdown, state.selectedInventoryObjects)
+		notify("Object Filter", "Cleared. All objects allowed.")
 	end,
 })
 
