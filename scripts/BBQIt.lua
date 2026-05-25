@@ -588,7 +588,28 @@ local function getChosenMeatName()
 	end
 
 	if #candidates == 0 then
+		if hasSelectedMeats then
+			state.lastBuyAction = "Selected meats unavailable"
+		end
+
 		return nil
+	end
+
+	if hasSelectedMeats then
+		local selectedCandidates = {}
+
+		for _, meat in ipairs(candidates) do
+			if selectedSet[meat.name] then
+				table.insert(selectedCandidates, meat)
+			end
+		end
+
+		if #selectedCandidates == 0 then
+			state.lastBuyAction = "Selected meats unavailable"
+			return nil
+		end
+
+		candidates = selectedCandidates
 	end
 
 	local function highest(list)
@@ -607,18 +628,6 @@ local function getChosenMeatName()
 		return best and best.name or nil
 	end
 
-	local function selectedCandidates()
-		local selected = {}
-
-		for _, meat in ipairs(candidates) do
-			if selectedSet[meat.name] then
-				table.insert(selected, meat)
-			end
-		end
-
-		return selected
-	end
-
 	if state.buyMeatMode == "Cheapest Affordable" then
 		return lowest(candidates)
 	elseif state.buyMeatMode == "Random Affordable" then
@@ -629,10 +638,9 @@ local function getChosenMeatName()
 			return nil
 		end
 
-		return highest(selectedCandidates())
+		return highest(candidates)
 	elseif state.buyMeatMode == "Selected First" then
-		local selected = selectedCandidates()
-		return highest(selected) or highest(candidates)
+		return highest(candidates)
 	end
 
 	return highest(candidates)
@@ -1686,12 +1694,13 @@ table.insert(state.loops, task.spawn(function()
 			state.lastBuyAction = "Open slots: " .. emptySpotCount .. ", raw meat: " .. rawMeatCount
 
 			if neededMeatCount > 0 and now - lastBuy > 1.25 then
+				local previousBuyAction = state.lastBuyAction
 				local meatName = getChosenMeatName()
 				if meatName then
 					buyMeat:FireServer(meatName, false)
 					state.lastBuyAction = "Buying " .. meatName
 					lastBuy = now
-				else
+				elseif state.lastBuyAction == previousBuyAction then
 					state.lastBuyAction = "No affordable in-stock meat"
 				end
 			end
