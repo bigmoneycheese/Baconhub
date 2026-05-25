@@ -817,6 +817,44 @@ local function findTemplate(baseName)
 	end
 end
 
+local objectPriceCache = {}
+
+local function getObjectPrice(baseName)
+	if objectPriceCache[baseName] ~= nil then
+		return objectPriceCache[baseName]
+	end
+
+	local template = findTemplate(baseName)
+	local price = 0
+
+	if template then
+		local templatePrice = template:GetAttribute("Price")
+		if typeof(templatePrice) == "number" then
+			price = templatePrice
+		end
+	end
+
+	objectPriceCache[baseName] = price
+	return price
+end
+
+local function sortObjectsByValue(objects)
+	table.sort(objects, function(left, right)
+		local leftPrice = left.price or getObjectPrice(left.name)
+		local rightPrice = right.price or getObjectPrice(right.name)
+
+		if leftPrice == rightPrice then
+			if left.area == right.area then
+				return left.name < right.name
+			end
+
+			return left.area > right.area
+		end
+
+		return leftPrice > rightPrice
+	end)
+end
+
 local function getTemplateInfo(baseName)
 	local template, category = findTemplate(baseName)
 	if not template then
@@ -832,6 +870,7 @@ local function getTemplateInfo(baseName)
 	return {
 		name = baseName,
 		category = category,
+		price = getObjectPrice(baseName),
 		width = math.max(1, boxSize.X),
 		depth = math.max(1, boxSize.Z),
 		height = boxSize.Y,
@@ -844,10 +883,25 @@ local function isPlaceableTool(tool)
 	return tool:IsA("Tool") and findTemplate(getToolBaseName(tool)) ~= nil
 end
 
+local function sortObjectQueue()
+	table.sort(state.objectQueue, function(left, right)
+		local leftPrice = getObjectPrice(left)
+		local rightPrice = getObjectPrice(right)
+
+		if leftPrice == rightPrice then
+			return tostring(left) < tostring(right)
+		end
+
+		return leftPrice > rightPrice
+	end)
+end
+
 local function enqueueObject(baseName, count)
 	for _ = 1, count do
 		table.insert(state.objectQueue, baseName)
 	end
+
+	sortObjectQueue()
 	state.lastObjectAction = "Queued " .. baseName
 end
 
@@ -1089,13 +1143,7 @@ local function getPlacedObjects(lot)
 		end
 	end
 
-	table.sort(objects, function(left, right)
-		if left.area == right.area then
-			return left.name < right.name
-		end
-
-		return left.area > right.area
-	end)
+	sortObjectsByValue(objects)
 
 	return objects
 end
@@ -1114,6 +1162,7 @@ local function getInventoryObjects()
 							table.insert(objects, {
 								name = info.name,
 								category = info.category,
+								price = info.price,
 								width = info.width,
 								depth = info.depth,
 								height = info.height,
@@ -1127,13 +1176,7 @@ local function getInventoryObjects()
 		end
 	end
 
-	table.sort(objects, function(left, right)
-		if left.area == right.area then
-			return left.name < right.name
-		end
-
-		return left.area > right.area
-	end)
+	sortObjectsByValue(objects)
 
 	return objects
 end
@@ -1155,6 +1198,8 @@ local function pickupAllMeat(lot)
 end
 
 local function makePlan(objects, placementPart)
+	sortObjectsByValue(objects)
+
 	local margin = 1.25
 	local minX = placementPart.Position.X - placementPart.Size.X / 2 + margin
 	local maxX = placementPart.Position.X + placementPart.Size.X / 2 - margin
