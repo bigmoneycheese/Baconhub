@@ -22,6 +22,7 @@ Baconhub is a lightweight Roblox script hub with no key system. The goal is to k
 
 ## Supported Games
 
+- `Bobo Heist`
 - `BBQ It`
 - `Demonology`
 - `+1 Health Per Click`
