@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Request BaconHub game support and view games in progress.">
+  <title>BaconHub - Requests</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato&family=Montserrat&family=Open+Sans&display=swap" rel="stylesheet">
+  <link rel="icon" href="BaconHub.png" type="image/png">
+  <link rel="stylesheet" href="resources/site.css">
+  <script defer src="resources/site.js"></script>
+</head>
+<body class="bgd-attachment-fixed">
+  <nav class="mob-menu" aria-label="Mobile navigation">
+    <button class="mob-menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu">
+      <svg class="mobile-ham" width="40" height="25" viewBox="0 0 40 25" aria-hidden="true">
+        <line x1="0" y1="3" x2="40" y2="3"></line>
+        <line x1="0" y1="13" x2="40" y2="13"></line>
+        <line x1="0" y1="23" x2="40" y2="23"></line>
+      </svg>
+      <svg class="mobile-quit" width="26" height="50" viewBox="0 0 26 50" aria-hidden="true">
+        <line x1="0" y1="1" x2="26" y2="25"></line>
+        <line x1="0" y1="25" x2="26" y2="1"></line>
+      </svg>
+    </button>
+    <div id="mobile-menu" class="mob-menu-overlay">
+      <ul class="mob-menu-list">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="Download.html">Download</a></li>
+        <li><a href="documentation.html">Documentation</a></li>
+        <li class="selected"><a href="requests.html">Requests</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="site-background">
+    <div class="outer-content-wrapper">
+      <header class="site-header">
+        <div class="heading-container">
+          <div class="heading-wrap">
+            <h1><a class="site-title" href="index.html">BaconHub</a></h1>
+            <nav class="desktop-nav" aria-label="Primary navigation">
+              <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="Download.html">Download</a></li>
+                <li><a href="documentation.html">Documentation</a></li>
+                <li class="selected"><a href="requests.html">Requests</a></li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </header>
+
+      <main class="content-wrap">
+        <div class="content-column">
+          <div class="inner-content-column documentation">
+            <section aria-labelledby="requests-title">
+              <h2 id="requests-title" class="page-title">Game Requests</h2>
+              <p>Use this page to track games that are being worked on and request new BaconHub support.</p>
+            </section>
+
+            <section aria-labelledby="working-on">
+              <h4 id="working-on">Game Status:</h4>
+              <ul class="list-block">
+                <li>99 Nights in the Forest <span class="status-pill planned">Planned</span></li>
+                <li>Valley Prison <span class="status-pill planned">Planned</span></li>
+              </ul>
+            </section>
+
+            <section aria-labelledby="request-game">
+              <h4 id="request-game">Request A Game:</h4>
+              <p>Use GitHub Issues to request new game support or report a supported game that stopped working.</p>
+              <div class="button-row request-actions">
+                <a class="sys-button" href="https://github.com/bigmoneycheese/Baconhub/issues/new?title=Game%20request%3A%20&body=Roblox%20game%20link%3A%0A%0AGame%20name%3A%0A%0ARequested%20features%3A%0A%0AExtra%20notes%3A" target="_blank" rel="noopener">Request on GitHub</a>
+                <a class="sys-button problem-button" href="https://github.com/bigmoneycheese/Baconhub/issues/new?title=Game%20not%20working%3A%20&body=Supported%20game%20name%3A%0A%0ARoblox%20game%20link%3A%0A%0AWhat%20is%20not%20working%3A%0A%0AExecutor%20used%20optional%3A%0A%0AExtra%20notes%3A" target="_blank" rel="noopener">Report Not Working</a>
+              </div>
+              <p class="request-note"><a href="https://github.com/bigmoneycheese/Baconhub/issues" target="_blank" rel="noopener">View all open requests and reports</a>.</p>
+            </section>
+
+            <section aria-labelledby="status-legend">
+              <h4 id="status-legend">Status Guide:</h4>
+              <ul class="list-block status-guide">
+                <li><span class="status-pill planned">Planned</span> Added to the queue.</li>
+                <li><span class="status-pill active">In Progress</span> Script testing or UI work has started.</li>
+                <li><span class="status-pill review">Testing</span> Features are being checked before release.</li>
+                <li><span class="status-pill broken">Broken</span> A supported game has an active not-working report.</li>
+                <li><span class="status-pill done">Supported</span> Available through the BaconHub loader.</li>
+              </ul>
+            </section>
+
+            <section aria-labelledby="completed-requests">
+              <h4 id="completed-requests">Previously Requested / Now Supported:</h4>
+              <ul class="list-block completed-request-list">
+                <li><a href="https://raw.githubusercontent.com/bigmoneycheese/Baconhub/main/scripts/BoboHeist.lua" target="_blank" rel="noopener">Bobo Heist <span class="status-pill done">Supported</span></a></li>
+                <li><a href="https://raw.githubusercontent.com/bigmoneycheese/Baconhub/main/scripts/BBQIt.lua" target="_blank" rel="noopener">BBQ It <span class="status-pill done">Supported</span></a></li>
+                <li><a href="https://raw.githubusercontent.com/bigmoneycheese/Baconhub/main/scripts/Demonology.lua" target="_blank" rel="noopener">Demonology <span class="status-pill done">Supported</span></a></li>
+                <li><a href="https://raw.githubusercontent.com/bigmoneycheese/Baconhub/main/scripts/UntitledTagGame.lua" target="_blank" rel="noopener">untitled tag game <span class="status-pill done">Supported</span></a></li>
+                <li><a href="https://raw.githubusercontent.com/bigmoneycheese/Baconhub/main/scripts/SpinASoccerCard.lua" target="_blank" rel="noopener">Spin a Soccer Card <span class="status-pill done">Supported</span></a></li>
+                <li><a href="https://raw.githubusercontent.com/bigmoneycheese/Baconhub/main/scripts/Slap.lua" target="_blank" rel="noopener">SLAP <span class="status-pill done">Supported</span></a></li>
+                <li><a href="https://raw.githubusercontent.com/bigmoneycheese/Baconhub/main/scripts/Forsaken.lua" target="_blank" rel="noopener">Forsaken <span class="status-pill done">Supported</span></a></li>
+                <li><a href="https://raw.githubusercontent.com/bigmoneycheese/Baconhub/main/scripts/PlusOneShrinkPerStep.lua" target="_blank" rel="noopener">+1 Shrink per Step <span class="status-pill done">Supported</span></a></li>
+                <li><a href="https://raw.githubusercontent.com/bigmoneycheese/Baconhub/main/scripts/SlimeRNG.lua" target="_blank" rel="noopener">Slime RNG <span class="status-pill done">Supported</span></a></li>
+                <li><a href="https://raw.githubusercontent.com/bigmoneycheese/Baconhub/main/scripts/GunEvolution.lua" target="_blank" rel="noopener">Gun Evolution <span class="status-pill done">Supported</span></a></li>
+                <li><a href="https://raw.githubusercontent.com/bigmoneycheese/Baconhub/main/scripts/PlusOneHealthPerClick.lua" target="_blank" rel="noopener">+1 Health Per Click <span class="status-pill done">Supported</span></a></li>
+              </ul>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>
